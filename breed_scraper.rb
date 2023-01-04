@@ -138,3 +138,7 @@ def get_key(index)
     'error'
   end
 end
+
+def format_name(breed)
+  breed.unicode_normalize(:nfkd).encode('ASCII', replace: '').downcase.gsub(' ','-')
+end

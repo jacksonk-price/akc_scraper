@@ -142,3 +142,12 @@ end
 def format_name(breed)
   breed.unicode_normalize(:nfkd).encode('ASCII', replace: '').downcase.gsub(' ','-')
 end
+
+def send_to_csv(breed_info)
+  CSV.open("dog-data.csv", "wb") do |csv|
+    csv << breed_info.first[1].keys
+    breed_info.each do |k, v|
+      csv << v.values
+    end
+  end
+end

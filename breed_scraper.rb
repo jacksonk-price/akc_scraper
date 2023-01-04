@@ -41,6 +41,21 @@ $BREED_NAMES = ["Affenpinscher", "Afghan Hound", "Airedale Terrier", "Akita", "A
                 "Vizsla", "Volpino Italiano", "Weimaraner", "Welsh Springer Spaniel", "Welsh Terrier", "West Highland White Terrier", "Wetterhoun", "Whippet", "Wire Fox Terrier",
                 "Wirehaired Pointing Griffon", "Wirehaired Vizsla", "Working Kelpie", "Xoloitzcuintli", "Yakutian Laika", "Yorkshire Terrier"]
 
+def scrape_it
+  puts '=' * 50
+  puts 'starting scrape...'
+  puts '=' * 50
+
+  breed_names = $BREED_NAMES
+  breed_info = collect_breed_info(breed_names)
+
+  puts '=' * 50
+  print 'converting data to csv...'
+  send_to_csv(breed_info)
+  puts 'complete'
+  puts '=' * 50
+  $DRIVER.close
+end
 def collect_breed_info(breed_names)
   breed_hash = { }
   breed_names.each_with_index do |breed, index|

@@ -93,6 +93,11 @@ def collect_breed_info(breed_names)
   end
   breed_hash
 end
+def percent_completed(index, breed_amount)
+  percent = (((index.to_f + 1.0) / breed_amount.to_f) * 100.0).to_s
+  decimal_index = percent.index('.')
+  percent[0, decimal_index]. + percent[decimal_index, (decimal_index + 1)]
+end
 def collect_breed_description
   sleep 1
   $DRIVER.find_element(:class, 'breed-page__about__read-more__text').text
@@ -151,3 +156,5 @@ def send_to_csv(breed_info)
     end
   end
 end
+
+scrape_it

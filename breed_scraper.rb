@@ -40,3 +40,38 @@ $BREED_NAMES = ["Affenpinscher", "Afghan Hound", "Airedale Terrier", "Akita", "A
                 "Tibetan Mastiff", "Tibetan Spaniel", "Tibetan Terrier", "Tornjak", "Tosa", "Toy Fox Terrier", "Transylvanian Hound", "Treeing Tennessee Brindle", "Treeing Walker Coonhound",
                 "Vizsla", "Volpino Italiano", "Weimaraner", "Welsh Springer Spaniel", "Welsh Terrier", "West Highland White Terrier", "Wetterhoun", "Whippet", "Wire Fox Terrier",
                 "Wirehaired Pointing Griffon", "Wirehaired Vizsla", "Working Kelpie", "Xoloitzcuintli", "Yakutian Laika", "Yorkshire Terrier"]
+
+def get_key(index)
+  case index
+  when 0
+    'family_score'
+  when 1
+    'children_score'
+  when 2
+    'other_dog_score'
+  when 3
+    'shedding_score'
+  when 4
+    'grooming_score'
+  when 5
+    'drooling_score'
+  when 6
+    'stranger_score'
+  when 7
+    'playfulness_score'
+  when 8
+    'protective_score'
+  when 9
+    'adaptability_score'
+  when 10
+    'trainability_score'
+  when 11
+    'energy_score'
+  when 12
+    'barking_score'
+  when 13
+    'mental_stim_score'
+  else
+    'error'
+  end
+end

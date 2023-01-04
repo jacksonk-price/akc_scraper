@@ -41,6 +41,43 @@ $BREED_NAMES = ["Affenpinscher", "Afghan Hound", "Airedale Terrier", "Akita", "A
                 "Vizsla", "Volpino Italiano", "Weimaraner", "Welsh Springer Spaniel", "Welsh Terrier", "West Highland White Terrier", "Wetterhoun", "Whippet", "Wire Fox Terrier",
                 "Wirehaired Pointing Griffon", "Wirehaired Vizsla", "Working Kelpie", "Xoloitzcuintli", "Yakutian Laika", "Yorkshire Terrier"]
 
+def collect_breed_info(breed_names)
+  breed_hash = { }
+  breed_names.each_with_index do |breed, index|
+    formatted_name = format_name(breed)
+    url = "https://www.akc.org/dog-breeds/#{formatted_name}/"
+    $DRIVER.navigate.to(url)
+    $WAIT.until {
+      begin
+        $DRIVER.find_element(:class, 'breed-page__about__read-more__text__less')
+      rescue
+        puts "waiting on #{formatted_name}..."
+      end
+    }
+    print "collecting data for #{formatted_name}..."
+    scores = collect_breed_scores
+    breed_hash[breed] = {
+      name: breed,
+      description: collect_breed_description,
+      family_score: scores[:family_score],
+      children_score: scores[:children_score],
+      other_dog_score: scores[:other_dog_score],
+      shedding_score: scores[:shedding_score],
+      grooming_score: scores[:grooming_score],
+      drooling_score: scores[:drooling_score],
+      stranger_score: scores[:stranger_score],
+      playfulness_score: scores[:playfulness_score],
+      protective_score: scores[:protective_score],
+      adaptability_score: scores[:adaptability_score],
+      trainability_score: scores[:trainability_score],
+      energy_score: scores[:energy_score],
+      barking_score: scores[:barking_score],
+      mental_stim_score: scores[:mental_stim_score]
+    }
+    puts "success...(#{percent_completed(index, breed_names.count)}% completed)"
+  end
+  breed_hash
+end
 def collect_breed_description
   sleep 1
   $DRIVER.find_element(:class, 'breed-page__about__read-more__text').text

@@ -41,6 +41,10 @@ $BREED_NAMES = ["Affenpinscher", "Afghan Hound", "Airedale Terrier", "Akita", "A
                 "Vizsla", "Volpino Italiano", "Weimaraner", "Welsh Springer Spaniel", "Welsh Terrier", "West Highland White Terrier", "Wetterhoun", "Whippet", "Wire Fox Terrier",
                 "Wirehaired Pointing Griffon", "Wirehaired Vizsla", "Working Kelpie", "Xoloitzcuintli", "Yakutian Laika", "Yorkshire Terrier"]
 
+def collect_breed_description
+  sleep 1
+  $DRIVER.find_element(:class, 'breed-page__about__read-more__text').text
+end
 def collect_breed_scores
   score_hash = Hash.new
   $DRIVER.find_element(:id, 'breed-page__traits__all').find_elements(:class, 'breed-trait-score__score-wrap').each_with_index do |d, index|

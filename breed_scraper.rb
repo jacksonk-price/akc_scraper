@@ -40,18 +40,20 @@ $BREED_NAMES = ["Affenpinscher", "Afghan Hound", "Airedale Terrier", "Akita", "A
                 "Tibetan Mastiff", "Tibetan Spaniel", "Tibetan Terrier", "Tornjak", "Tosa", "Toy Fox Terrier", "Transylvanian Hound", "Treeing Tennessee Brindle", "Treeing Walker Coonhound",
                 "Vizsla", "Volpino Italiano", "Weimaraner", "Welsh Springer Spaniel", "Welsh Terrier", "West Highland White Terrier", "Wetterhoun", "Whippet", "Wire Fox Terrier",
                 "Wirehaired Pointing Griffon", "Wirehaired Vizsla", "Working Kelpie", "Xoloitzcuintli", "Yakutian Laika", "Yorkshire Terrier"]
+$breed_test = ['Akita']
 
 def scrape_it
   puts '=' * 50
   puts 'starting scrape...'
   puts '=' * 50
 
-  breed_names = $BREED_NAMES
+  #breed_names = $BREED_NAMES
+  breed_names = $breed_test
   breed_info = collect_breed_info(breed_names)
 
   puts '=' * 50
   print 'converting data to csv...'
-  send_to_csv(breed_info)
+  #send_to_csv(breed_info)
   puts 'complete'
   puts '=' * 50
   $DRIVER.close
@@ -59,6 +61,7 @@ end
 def collect_breed_info(breed_names)
   breed_hash = { }
   breed_names.each_with_index do |breed, index|
+    return if index.equal? 1
     formatted_name = format_name(breed)
     url = "https://www.akc.org/dog-breeds/#{formatted_name}/"
     $DRIVER.navigate.to(url)
@@ -89,6 +92,7 @@ def collect_breed_info(breed_names)
       barking_score: scores[:barking_score],
       mental_stim_score: scores[:mental_stim_score]
     }
+    collect_breed_weight
     puts "success...(#{percent_completed(index, breed_names.count)}% completed)"
   end
   breed_hash
@@ -108,6 +112,11 @@ def collect_breed_scores
     score_hash[get_key(index).to_sym] = d.find_elements(:class, 'breed-trait-score__score-unit--filled').count
   end
   score_hash
+end
+def collect_breed_weight
+  elems_arr = $DRIVER.find_elements(:class, 'breed-page__hero__overview__subtitle').map { |e| e.text }
+  weight_elems = elems_arr.select{ |s| s.include? 'pounds'}.map
+  puts weight_elems.inspect
 end
 def get_key(index)
   case index

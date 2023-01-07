@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require 'selenium-webdriver'
 require 'csv'
+require 'colorize'
 
 $OPTIONS = Selenium::WebDriver::Firefox::Options.new(args: ['-headless'])
 # $DRIVER = Selenium::WebDriver.for(:firefox, options: $OPTIONS)
@@ -59,7 +60,6 @@ end
 def collect_breed_info(breed_names)
   breed_hash = { }
   breed_names.each_with_index do |breed, index|
-    #next unless breed == 'Alaskan Malamute'
     formatted_name = format_name(breed)
     url = "https://www.akc.org/dog-breeds/#{formatted_name}/"
     $DRIVER.navigate.to(url)
@@ -67,15 +67,21 @@ def collect_breed_info(breed_names)
       begin
         $DRIVER.find_element(:class, 'breed-page__about__read-more__text__less')
       rescue
+        print '[INFO] '.blue
         puts "waiting on #{formatted_name}..."
       end
     }
-    print "collecting data for #{formatted_name}..."
-    collect_breed_weight
+    print '[INFO] '.blue
     scores = collect_breed_scores
+    puts "collected score values for #{formatted_name}..."
+    weight_hash = collect_breed_weight
+    print '[INFO] '.blue
+    puts "collected weight values for #{formatted_name}..."
     breed_hash[breed] = {
       name: breed,
       description: collect_breed_description,
+      min_weight: weight_hash[:min_weight],
+      max_weight: weight_hash[:max_weight],
       family_score: scores[:family_score],
       children_score: scores[:children_score],
       other_dog_score: scores[:other_dog_score],
@@ -91,7 +97,8 @@ def collect_breed_info(breed_names)
       barking_score: scores[:barking_score],
       mental_stim_score: scores[:mental_stim_score]
     }
-    puts "success...(#{percent_completed(index, breed_names.count)}% completed)"
+    print '[SUCCESS] '.green
+    puts "completed #{formatted_name} #{percent_completed(index, breed_names.count)}% completed)"
   end
   breed_hash
 end
@@ -112,66 +119,74 @@ def collect_breed_scores
   score_hash
 end
 def collect_breed_weight
-  # TO DO
-  # handle lbs
-  # handle whitespace - remove all and then detect non integer characters
-  # error being thrown on alaskan malamute
-  $WAIT.until {
-    begin
-      $DRIVER.find_element(:class, 'breed-page__about__read-more__text__less')
-    rescue
-      puts "waiting on weight values..."
-    end
-  }
+  sleep 2
   weight_hash = Hash.new
   elems_arr = $DRIVER.find_elements(:class, 'breed-page__hero__overview__subtitle').map { |e| e.text }
-  weight_elems = elems_arr.select{ |e| e.include? 'pounds'}.map{ |e| e }
+  weight_elems = elems_arr.select { |e| e.include? 'pounds' or e.include? 'lbs' }
   # lord forgive me
-  if weight_elems.count == 2
-    male_weight_text = remove_whitespace(weight_elems[0])
-    if male_weight_text.include? '-'
-      split_male_weight_text = male_weight_text.split('-') # => ["70", "130pounds"]
-      max_male_weight = split_male_weight_text[1].to_s.split('p')[0]
-    else
-      max_male_weight = male_weight_text.split('p')[0]
+  case weight_elems.count
+  when 1
+    if weight_elems[0].include? 'pounds' # example => ["45- 70 pounds"]
+      weight_text = remove_whitespace(weight_elems[0]).gsub('pounds', '') # remove whitespace and pounds => ["45-70"]
+      split_weight_text = weight_text.split('-') # split at hyphen => ["45", "70"]
+      weight_hash[:min_weight] = split_weight_text[0] # store in hash for min => "45"
+      weight_hash[:max_weight] = split_weight_text[1] # store hash for max => "70"
+    elsif weight_elems[0].include? 'lbs' # example => ["45- 70 lbs"]
+      weight_text = remove_whitespace(weight_elems[0]).gsub('lbs', '') # remove whitespace and lbs => ["45-70"]
+      split_weight_text = weight_text.split('-') # split at hyphen => ["45", "70"]
+      weight_hash[:min_weight] = split_weight_text[0] # store in hash for min => "45"
+      weight_hash[:max_weight] = split_weight_text[1] # store in hash for max => "70"
     end
-
-    female_weight_text = remove_whitespace(weight_elems[1])
-    if female_weight_text.include? '-'
-      puts "#{female_weight_text} female weight text"
-      split_female_weight_text = female_weight_text.split('-')[0]
-      min_female_weight = split_female_weight_text[0]
-      puts min_female_weight.to_s
-    else
-      min_female_weight = female_weight_text.split('p')[0]
+  when 2
+    if weight_elems[0].include? 'pounds' # example => ["45- 70 pounds (male)", "25- 55 pounds (female)"]
+      if weight_elems[0].include? 'under'
+           weight_text = remove_whitespace(weight_elems[1])
+           split_weight_text = weight_text.split('-')
+           weight_hash[:min_weight] = split_weight_text[0]
+           weight_hash[:max_weight] = split_weight_text[1].split('p')[0]
+      else
+        male_weight_text = remove_whitespace(weight_elems[0]) # remove whitespace for male value => ["45-70pounds(male)"]
+        if male_weight_text.include? '-'
+          split_male_weight_text = male_weight_text.split('-') # split values => ["70", "130pounds(male)"]
+          max_male_weight = split_male_weight_text[1].split('p')[0] # split max val at the p and select first elem=> ["130"]
+        else
+          max_male_weight = male_weight_text.split('p')[0]
+        end
+        female_weight_text = remove_whitespace(weight_elems[1])
+        if female_weight_text.include? '-'
+          min_female_weight = female_weight_text.split('-')[0]
+        else
+          min_female_weight = female_weight_text.split('p')[0]
+        end
+        weight_hash[:min_weight] = min_female_weight
+        weight_hash[:max_weight] = max_male_weight
+      end
+    elsif weight_elems[0].include? 'lbs'
+      male_weight_text = remove_whitespace(weight_elems[0])
+      if male_weight_text.include? '-'
+        split_male_weight_text = male_weight_text.split('-') # => ["70", "130pounds"]
+        max_male_weight = split_male_weight_text[1].to_s.split('l')[0]
+      else
+        max_male_weight = male_weight_text.split('l')[0]
+      end
+      female_weight_text = remove_whitespace(weight_elems[1])
+      if female_weight_text.include? '-'
+        min_female_weight = female_weight_text.split('-')[0]
+      else
+        min_female_weight = female_weight_text.split('l')[0]
+      end
+      weight_hash[:min_weight] = min_female_weight
+      weight_hash[:max_weight] = max_male_weight
     end
-    weight_hash[:min_weight] = min_female_weight
-    weight_hash[:max_weight] = max_male_weight
-  elsif weight_elems.count == 1
-    weight_text = remove_whitespace(weight_elems[0])
-    split_weight_text = weight_text.split('-')
-    weight_hash[:min_weight] = split_weight_text[0]
-    weight_hash[:max_weight] = split_weight_text[1].split('p')[0]
+  when 3
+    weight_text = remove_whitespace(weight_elems[2])
+    weight_hash[:min_weight] = weight_text.split('-')[0]
+    weight_hash[:max_weight] = weight_text.split('-')[1].split('p')[0]
+  else
+    puts weight_elems.count
+    puts 'we have an issue inside the case statement'
   end
-  # if weight_elems.count > 1
-  #   male_text = weight_elems[0].split('-')
-  #   max_weight = text_before_space(male_text[1])
-  #   female_text = weight_elems[1].split('-')
-  #   min_weight = text_before_space(female_text[0])
-  #   weight_hash[:min_weight] = min_weight
-  #   weight_hash[:max_weight] = max_weight
-  # elsif weight_elems.count == 1
-  #   if weight_elems[0].include? '+'
-  #     one_weight_provided = text_before_plus(weight_elems[0])
-  #     weight_hash[:min_weight] = one_weight_provided
-  #     weight_hash[:max_weight] = one_weight_provided
-  #   else
-  #     after_split = weight_elems[0].split('-')
-  #     weight_hash[:min_weight] = after_split[0]
-  #     weight_hash[:max_weight] = text_before_space(after_split[1])
-  #   end
-  # end
-  puts weight_hash.inspect
+  weight_hash
 end
 def get_key(index)
   case index

@@ -40,20 +40,18 @@ $BREED_NAMES = ["Affenpinscher", "Afghan Hound", "Airedale Terrier", "Akita", "A
                 "Tibetan Mastiff", "Tibetan Spaniel", "Tibetan Terrier", "Tornjak", "Tosa", "Toy Fox Terrier", "Transylvanian Hound", "Treeing Tennessee Brindle", "Treeing Walker Coonhound",
                 "Vizsla", "Volpino Italiano", "Weimaraner", "Welsh Springer Spaniel", "Welsh Terrier", "West Highland White Terrier", "Wetterhoun", "Whippet", "Wire Fox Terrier",
                 "Wirehaired Pointing Griffon", "Wirehaired Vizsla", "Working Kelpie", "Xoloitzcuintli", "Yakutian Laika", "Yorkshire Terrier"]
-$breed_test = ['Akita']
 
 def scrape_it
   puts '=' * 50
   puts 'starting scrape...'
   puts '=' * 50
 
-  #breed_names = $BREED_NAMES
-  breed_names = $breed_test
+  breed_names = $BREED_NAMES
   breed_info = collect_breed_info(breed_names)
 
   puts '=' * 50
   print 'converting data to csv...'
-  #send_to_csv(breed_info)
+  send_to_csv(breed_info)
   puts 'complete'
   puts '=' * 50
   $DRIVER.close
@@ -61,7 +59,7 @@ end
 def collect_breed_info(breed_names)
   breed_hash = { }
   breed_names.each_with_index do |breed, index|
-    return if index.equal? 1
+    #next unless breed == 'Alaskan Malamute'
     formatted_name = format_name(breed)
     url = "https://www.akc.org/dog-breeds/#{formatted_name}/"
     $DRIVER.navigate.to(url)
@@ -73,6 +71,7 @@ def collect_breed_info(breed_names)
       end
     }
     print "collecting data for #{formatted_name}..."
+    collect_breed_weight
     scores = collect_breed_scores
     breed_hash[breed] = {
       name: breed,
@@ -92,7 +91,6 @@ def collect_breed_info(breed_names)
       barking_score: scores[:barking_score],
       mental_stim_score: scores[:mental_stim_score]
     }
-    collect_breed_weight
     puts "success...(#{percent_completed(index, breed_names.count)}% completed)"
   end
   breed_hash
@@ -114,9 +112,66 @@ def collect_breed_scores
   score_hash
 end
 def collect_breed_weight
+  # TO DO
+  # handle lbs
+  # handle whitespace - remove all and then detect non integer characters
+  # error being thrown on alaskan malamute
+  $WAIT.until {
+    begin
+      $DRIVER.find_element(:class, 'breed-page__about__read-more__text__less')
+    rescue
+      puts "waiting on weight values..."
+    end
+  }
+  weight_hash = Hash.new
   elems_arr = $DRIVER.find_elements(:class, 'breed-page__hero__overview__subtitle').map { |e| e.text }
-  weight_elems = elems_arr.select{ |s| s.include? 'pounds'}.map
-  puts weight_elems.inspect
+  weight_elems = elems_arr.select{ |e| e.include? 'pounds'}.map{ |e| e }
+  # lord forgive me
+  if weight_elems.count == 2
+    male_weight_text = remove_whitespace(weight_elems[0])
+    if male_weight_text.include? '-'
+      split_male_weight_text = male_weight_text.split('-') # => ["70", "130pounds"]
+      max_male_weight = split_male_weight_text[1].to_s.split('p')[0]
+    else
+      max_male_weight = male_weight_text.split('p')[0]
+    end
+
+    female_weight_text = remove_whitespace(weight_elems[1])
+    if female_weight_text.include? '-'
+      puts "#{female_weight_text} female weight text"
+      split_female_weight_text = female_weight_text.split('-')[0]
+      min_female_weight = split_female_weight_text[0]
+      puts min_female_weight.to_s
+    else
+      min_female_weight = female_weight_text.split('p')[0]
+    end
+    weight_hash[:min_weight] = min_female_weight
+    weight_hash[:max_weight] = max_male_weight
+  elsif weight_elems.count == 1
+    weight_text = remove_whitespace(weight_elems[0])
+    split_weight_text = weight_text.split('-')
+    weight_hash[:min_weight] = split_weight_text[0]
+    weight_hash[:max_weight] = split_weight_text[1].split('p')[0]
+  end
+  # if weight_elems.count > 1
+  #   male_text = weight_elems[0].split('-')
+  #   max_weight = text_before_space(male_text[1])
+  #   female_text = weight_elems[1].split('-')
+  #   min_weight = text_before_space(female_text[0])
+  #   weight_hash[:min_weight] = min_weight
+  #   weight_hash[:max_weight] = max_weight
+  # elsif weight_elems.count == 1
+  #   if weight_elems[0].include? '+'
+  #     one_weight_provided = text_before_plus(weight_elems[0])
+  #     weight_hash[:min_weight] = one_weight_provided
+  #     weight_hash[:max_weight] = one_weight_provided
+  #   else
+  #     after_split = weight_elems[0].split('-')
+  #     weight_hash[:min_weight] = after_split[0]
+  #     weight_hash[:max_weight] = text_before_space(after_split[1])
+  #   end
+  # end
+  puts weight_hash.inspect
 end
 def get_key(index)
   case index
@@ -155,6 +210,14 @@ end
 
 def format_name(breed)
   breed.unicode_normalize(:nfkd).encode('ASCII', replace: '').downcase.gsub(' ','-')
+end
+
+def remove_whitespace(string)
+  string.delete(' ')
+end
+
+def text_before_plus(string)
+  string.gsub(/\s.+/, '+')
 end
 
 def send_to_csv(breed_info)

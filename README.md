@@ -28,6 +28,6 @@ In your terminal, navigate to your local directory where these scripts are locat
 
 ## To Do
 
- * Add a method which collects min and max weight values for each breed
+ * Fix issues with some weight values returning zero or containing extra text in collect_breed_weight_method
 
 

@@ -1,6 +1,6 @@
-# breed_scraper
+# akc_scraper
 
-Ruby scripts that use Selenium to collect information on dog breeds from the [American Kennel Club](https://www.akc.org/).
+Ruby scripts that use Selenium to collect information on 280+ dog breeds from the [American Kennel Club](https://www.akc.org/).
 
 ### Prerequisites
 

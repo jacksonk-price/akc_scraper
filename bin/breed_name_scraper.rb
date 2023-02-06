@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 require "selenium-webdriver"
-
-$DRIVER = Selenium::WebDriver.for :firefox
+require_relative "../lib/globals"
+include Globals
 
 def scrape_it
   names = []
@@ -11,8 +11,7 @@ def scrape_it
     puts '-' * 50
     puts "navigating to https://www.akc.org/dog-breeds/?letter=#{letter}"
     puts '-' * 50
-    wait = Selenium::WebDriver::Wait.new(:timeout => 20)
-    wait.until {
+    $WAIT.until {
       $DRIVER.find_element(:class, 'resources-billboard__text')
     }
     while load_more_btn_exists? do

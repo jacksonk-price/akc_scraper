@@ -28,6 +28,7 @@ In your terminal, navigate to your local directory where these scripts are locat
 
 ## To Do
 
- * Fix issues with some weight values returning zero or containing extra text in collect_breed_weight_method
+ * Fix issues with some weight values returning zero or containing extra text in collect_breed_weight method
+ * Refactor collect_breed_weight method
 
 

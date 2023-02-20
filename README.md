@@ -15,16 +15,8 @@ This script collects the name of each breed listed on the [American Kennel Club]
 ### breed_scraper.rb
 This script uses the names collected in breed_name_scraper.rb to gather information from the [American Kennel Club](https://www.akc.org/) such as a description, energy_score, trainability_score, etc. This information is then outputted into a CSV file.
     
-## Running the scripts
-
-In your terminal, navigate to your local directory where these scripts are located and run:
-    
-    
-    ruby (script_name_here).rb
- 
- ### Example
-    
-    ruby breed_name_scraper.rb
+## Data
+You can view the data collected [here](https://github.com/jacksonk-price/akc_scraper/blob/master/output/dogs.csv)
 
 ## To Do
 

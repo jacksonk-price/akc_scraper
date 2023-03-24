@@ -11,9 +11,11 @@ def scrape_it
     puts '-' * 50
     puts "navigating to https://www.akc.org/dog-breeds/?letter=#{letter}"
     puts '-' * 50
+
     $WAIT.until {
       $DRIVER.find_element(:class, 'resources-billboard__text')
     }
+
     while load_more_btn_exists? do
       $DRIVER.find_element(:id, 'load-more-btn').click
       puts 'load more clicked...'

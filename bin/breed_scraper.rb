@@ -11,9 +11,7 @@ include BreedNames
 def scrape_it
   $LOG.info("starting scrape...")
 
-  # breed_names = $BREED_NAMES
-  breed_names = ["Affenpinscher", "Afghan Hound", "Airedale Terrier"]
-  breed_info = collect_breed_info(breed_names)
+  breed_info = collect_breed_info($BREED_NAMES)
 
   $LOG.info("converting to csv...")
   send_to_csv(breed_info)
@@ -31,6 +29,7 @@ def collect_breed_info(breed_names)
     description = current_breed.collect_breed_description
     scores = current_breed.collect_breed_scores
     weight_hash = current_breed.collect_breed_weight
+    puts weight_hash.inspect
 
     $LOG.info("collected all information for #{current_breed.name}")
 

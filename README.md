@@ -13,9 +13,4 @@ This script uses the names collected in breed_name_scraper.rb to gather informat
 ## Data
 You can view and download the data that was collected [here](https://github.com/jacksonk-price/akc_scraper/blob/master/output/dogs.csv).
 
-## To Do
-
- * Fix issues with some weight values returning zero or containing extra text in collect_breed_weight method
- * Refactor collect_breed_weight method
-
 

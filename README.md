@@ -14,4 +14,4 @@ This script uses the names collected in breed_name_scraper.rb to gather informat
 You can view and download the data that was collected [here](https://github.com/jacksonk-price/akc_scraper/blob/master/output/dogs.csv).
 
 ## Disclaimer
-*I do not own this data. The data collected belongs to the American Kennel Club. These scripts are for educational and informational purposes only.
+*I do not own this data. The data collected belongs to the American Kennel Club. These scripts are for educational and informational purposes only.*
